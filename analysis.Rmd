@@ -137,12 +137,19 @@ lines(vin1$x, predict(fit10, data.frame(vin1$x)), col = "pink")
 ```
 
 ```{r}
- #added the library "fitdistrplus"
+#added the library "fitdistrplus"
 #fit.gamma <- fitdist(gF_list, distr = "gamma", method = "mle")
 #summary(fit.gamma)
 #plot(fit.gamma)
 
 #curve(dweibull(x, scale=2.5, shape=1.5),from=0, to=15, main="Weibull distribution")
 #looks similar but I'm confused
+
+#gamma anad weibull both didnt work i will try poisson
+v=c(m_vout1/m_vin1, m_vout2/m_vin2, m_vout3/m_vin3, m_vout4/m_vin4, m_vout5/m_vin5)
+#this is the only one that looks ~vaguely~ like a fit
+plot(ppois(gF_list,v))
+#this could be useful but im too tired to search:
+#https://stat.ethz.ch/R-manual/R-devel/library/stats/html/glm.html
 
 ```
