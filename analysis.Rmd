@@ -149,11 +149,27 @@ lines(vin1$x, predict(fit10, data.frame(vin1$x)), col = "pink")
 v<-c(m_vout1/m_vin1, m_vout2/m_vin2, m_vout3/m_vin3, m_vout4/m_vin4, m_vout5/m_vin5)
 #this is the only one that looks ~vaguely~ like a fit
 plot(ppois(gF_list,v))
+stupidFit<-ppois(gF_list, v)
 #this could be useful but im too tired to search:
 #https://stat.ethz.ch/R-manual/R-devel/library/stats/html/glm.html
-
 ```
 
+```{r}
+#maybe we only need 3-10 kHz range???
+xRange <- vin1$x[24:80] #place between 3 and 10 kHz
+yRange <- gF_list[24:80]
+
+fit2 <- lm(yRange~poly(xRange,2,raw=TRUE))
+fit3 <- lm(yRange~poly(xRange,3,raw=TRUE))
+fit4 <- lm(yRange~poly(xRange,4,raw=TRUE))
+fit5 <- lm(yRange~poly(xRange,5,raw=TRUE))
+
+plot(xRange, yRange) #looks like it could be reasonably well fit with a 2nd or 3rd degree polynomial
+lines(xRange, predict(fit2, data.frame(xRange)), col="green")
+lines(xRange, predict(fit3, data.frame(xRange)), col="orange")
+lines(xRange, predict(fit4, data.frame(xRange)), col="red")
+lines(xRange, predict(fit5, data.frame(xRange)), col="blue")
+```
 
 ## Analysis Step 2: Johnson Noise 1
 Recording the resistor values measured during lab.
@@ -185,13 +201,13 @@ Capacitance for the circuit.
 ```{r}
 capacitance <-87.875
 capacitanceError <-.594
-
 ```
 
 Import measurements from experiment 2
 ```{r}
 experiment2data<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment2data.csv")
-View(experiment2data)
+
+#View(experiment2data)
 ```
 
 Calculate Vmeas
@@ -213,7 +229,15 @@ Calculate a value for G
 #definitely confused about this
 #G= integrate((gF_list)^2/1+(2*pi*), lower=3,upper = 10)
 #integrate()
+
+#G1k=integrate(((stupidFit^2)/(1+2*pi*capacitance*k1*f)^2), lower=3, upper=10)
+
+#http://spa-mxpweb.spa.umn.edu/resources/ExpWriteups/LabManNoise.pdf
+
+
 ```
+
+
 
 
 
