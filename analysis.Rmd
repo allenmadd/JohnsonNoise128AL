@@ -77,27 +77,27 @@ print(gF)
 
 Now to calculate the errors for each measurement (which will be propagated into the final error for the gain):
 ```{r}
-vin1_error= sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
-vin2_error= sd(vin2$y, na.rm=TRUE)/sqrt(length(vin2$y[!is.na(vin2$y)]))
-vin3_error= sd(vin3$y, na.rm=TRUE)/sqrt(length(vin3$y[!is.na(vin3$y)]))
-vin4_error= sd(vin4$y, na.rm=TRUE)/sqrt(length(vin4$y[!is.na(vin4$y)]))
-vin5_error= sd(vin5$y, na.rm=TRUE)/sqrt(length(vin5$y[!is.na(vin5$y)]))
+vin1_error<- sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
+vin2_error<-sd(vin2$y, na.rm=TRUE)/sqrt(length(vin2$y[!is.na(vin2$y)]))
+vin3_error<- sd(vin3$y, na.rm=TRUE)/sqrt(length(vin3$y[!is.na(vin3$y)]))
+vin4_error<- sd(vin4$y, na.rm=TRUE)/sqrt(length(vin4$y[!is.na(vin4$y)]))
+vin5_error<- sd(vin5$y, na.rm=TRUE)/sqrt(length(vin5$y[!is.na(vin5$y)]))
 
-vout1_error= sd(vout1$y[35:44], na.rm=TRUE)/sqrt(length(vout1$y[!is.na(vout1$y)]))
-vout2_error= sd(vout2$y[37:54], na.rm=TRUE)/sqrt(length(vout2$y[!is.na(vout2$y)]))
-vout3_error= sd(vout3$y[36:56], na.rm=TRUE)/sqrt(length(vout3$y[!is.na(vout3$y)]))
-vout4_error= sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)]))
-vout5_error= sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
+vout1_error<-sd(vout1$y[35:44], na.rm=TRUE)/sqrt(length(vout1$y[!is.na(vout1$y)]))
+vout2_error<- sd(vout2$y[37:54], na.rm=TRUE)/sqrt(length(vout2$y[!is.na(vout2$y)]))
+vout3_error<- sd(vout3$y[36:56], na.rm=TRUE)/sqrt(length(vout3$y[!is.na(vout3$y)]))
+vout4_error<- sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)]))
+vout5_error<- sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
 ```
 
 Now we have errors for every measurement. The averages used to calculate gain need errors too.
 ```{r}
-m_vin_error = sqrt(vin1_error^2+vin2_error^2 + vin3_error^2+ vin4_error^2+vin5_error^2)
-m_vout_error = sqrt(vout1_error^2+vout2_error^2 + vout3_error^2+ vout4_error^2+vout5_error^2)
+m_vin_error <- sqrt(vin1_error^2+vin2_error^2 + vin3_error^2+ vin4_error^2+vin5_error^2)
+m_vout_error <- sqrt(vout1_error^2+vout2_error^2 + vout3_error^2+ vout4_error^2+vout5_error^2)
 ```
 Now we can find the error in the gain function from the error in Vin and Vout
 ```{r}
-gF_error= sqrt(m_vin_error^2 +m_vout_error^2)
+gF_error<-sqrt(m_vin_error^2 +m_vout_error^2)
 print(gF_error)
 #seems a little small. not sure if I did it right then?
 ```
@@ -146,10 +146,85 @@ lines(vin1$x, predict(fit10, data.frame(vin1$x)), col = "pink")
 #looks similar but I'm confused
 
 #gamma anad weibull both didnt work i will try poisson
-v=c(m_vout1/m_vin1, m_vout2/m_vin2, m_vout3/m_vin3, m_vout4/m_vin4, m_vout5/m_vin5)
+v<-c(m_vout1/m_vin1, m_vout2/m_vin2, m_vout3/m_vin3, m_vout4/m_vin4, m_vout5/m_vin5)
 #this is the only one that looks ~vaguely~ like a fit
 plot(ppois(gF_list,v))
 #this could be useful but im too tired to search:
 #https://stat.ethz.ch/R-manual/R-devel/library/stats/html/glm.html
 
 ```
+
+
+## Analysis Step 2: Johnson Noise 1
+Recording the resistor values measured during lab.
+```{r}
+#everything will be in ohms 
+short<- .03
+shortError<-.001
+
+k20<-20090
+k20error<-1
+
+k35 <- 35230 #secretly 35.2 but that would be an ugly variable name
+k35error<-1
+
+k100 <- 100700
+k100error <- 1
+
+k10 <- 999.05
+k10error<- .01
+
+k1 <- 998.17
+k1error <- .01
+
+k48 <- 48650 #secretly 48.7k but again that would be an ugly variable name
+k48error<- 1
+```
+
+Capacitance for the circuit.
+```{r}
+capacitance <-87.875
+capacitanceError <-.594
+
+```
+
+Import measurements from experiment 2
+```{r}
+experiment2data<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment2data.csv")
+View(experiment2data)
+```
+
+Calculate Vmeas
+```{r}
+Vsys<- experiment2data[1,7] #first row 7th column
+
+VsysError <- experiment2data[1,9]
+
+Vmeas<- mean(experiment2data[2:7,7])
+VmeasError<-sqrt((sum(experiment2data[2:7,9])^2))
+
+V<- sqrt(Vsys^2+Vmeas^2)
+Verror<- sqrt(VmeasError^2+ VsysError^2)
+```
+
+Calculate a value for G
+
+```{r}
+#definitely confused about this
+#G= integrate((gF_list)^2/1+(2*pi*), lower=3,upper = 10)
+#integrate()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
