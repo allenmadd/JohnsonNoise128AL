@@ -274,7 +274,9 @@ So this returns a gain value G for each resistor
 resistors<-c(0,1000,10000,20000,32500, 48700,100000)
 plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
 ```
-Plotting R as a function of V^2, kB, and G
+#Plotting R as a function of V^2, kB, and G
+
+IM VERY CONUFSED. I HAVE 4 GRAPHS HERE BECAUSE IM NOT SURE WHAT GOES ON THE Y AXIS AND WHAT KIND OF FIT LINE WE NEED SO I HAVE ALL 4 COMBOS (Y AND X SWITCHED AND EACH OF A LINEAR OR POLYNOMIAL FIT LINE)
 ```{r}
 kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
 
@@ -282,22 +284,63 @@ area2<-area[2:7] #take away the short's data
 y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
   #v^2 
 
+#prepare data for graphing
 resistors2 <-resistors[2:7] #take away the short
 y<- unlist(y_value, use.names=FALSE)
 
+#this is the data with resistor as the x axis and the other term as the x axis. I didd this because I wasnt sure what to do honestly.
 fit  <- lm(y~resistors2)
-
-plot(resistors2,y_value, main= "Resistance as a function of Gain and Voltage", xlab= "V^2/ (4*kb*G)", ylab = "Resistance")
+plot(resistors2,y_value, main= "Resistance as a function of Gain and Voltage with a 1D Fit", xlab= "Resistance", ylab = "V^2/ (4*kb*G)")
 lines(resistors2, predict(fit, data.frame(resistors2)), col="red")
 legend("topleft", legend=c("Fit Line"),
        col=c("red"), lty=1:2, cex=0.8)
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
+
+plot(y, resistors2, main="Plot of Gain and Voltage as a function of Resistance with a 1D Fit")
+fit  <- lm(resistors2~y)
+lines(y, predict(fit,data.frame(y)),col="pink")
+legend("topleft", legend=c("Fit Line"),
+       col=c("pink"), lty=1:2, cex=0.8)
+summary(fit)
+plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
+
 ```
+So that gave us a giant value so I'm gonna try again
 
 ```{r}
 
-```
+fit2 <- lm(y~poly(resistors2,2,raw=TRUE))
 
+#plot same as above this time with a 2d fit line
+plot(resistors2,y_value, main= "Gain and Voltage as a function of Resistance with a 2nd order fit", ylab= "V^2/ (4*kb*G)", xlab = "Resistance")
+lines(resistors2, predict(fit2, data.frame(resistors2)), col="blue")
+legend("topleft", legend=c("Polynomial Fit Line"),
+       col=c("blue"), lty=1:2, cex=0.8)
+
+summary(fit2)
+plot(fit2$residuals, main = "Residuals of the fit line", ylab= "Residuals")
+
+
+#plot with switched variables and a 2d fitl ine 
+fit2 <- lm(y~poly(y,2,raw=TRUE))
+plot(y, resistors2, main= "Gain and Voltage as a function of Resistance with a 2nd order fit")
+lines(y, predict(fit2, data.frame(y)), col="orange")
+legend("topleft", legend=c("Polynomial Fit Line"),
+       col=c("orange"), lty=1:2, cex=0.8)
+summary(fit2)
+plot(fit2$residuals, main = "Residuals of the fit line", ylab= "Residuals")
+
+
+```
+I'm not getting data that makes sense. Please h e l p.
+
+
+#Experiment 3: Johnson Noise at Aboslute 0
+```{r}
+
+
+
+```
 
