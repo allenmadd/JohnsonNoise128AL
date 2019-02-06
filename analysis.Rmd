@@ -213,42 +213,134 @@ experiment2data<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/exper
 Calculate Vmeas
 ```{r}
 Vsys<- experiment2data[1,7] #first row 7th column
-
 VsysError <- experiment2data[1,9]
 
-Vmeas<- mean(experiment2data[2:7,7])
+Vmeask1<- (experiment2data[2,7])
+Vmeask10<-experiment2data[3,7]
+Vmeask20 <-experiment2data[4,7]
+Vmeask32<-experiment2data[5,7]
+Vmeask48<-experiment2data[6,7]
+Vmeask100<-experiment2data[7,7]
+
+Vmeas<-c(Vmeask1, Vmeask10, Vmeask20, Vmeask32, Vmeask48, Vmeask100)
+
+#need to redo the error later (2/5)
 VmeasError<-sqrt((sum(experiment2data[2:7,9])^2))
 
-V<- sqrt(Vsys^2+Vmeas^2)
+V<- sqrt(-Vsys^2+Vmeas^2)
 Verror<- sqrt(VmeasError^2+ VsysError^2)
 ```
 
+
+###Edward Stuff
+
 Calculate a value for G
-
+Find the mean of each value:
+It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so dont just take average
 ```{r}
-#definitely confused about this
-#G= integrate((gF_list)^2/1+(2*pi*), lower=3,upper = 10)
-#integrate()
+m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
+#take average of vouts
+m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
+```
 
-#G1k=integrate(((stupidFit^2)/(1+2*pi*capacitance*k1*f)^2), lower=3, upper=10)
-
-#http://spa-mxpweb.spa.umn.edu/resources/ExpWriteups/LabManNoise.pdf
-
-
+Now we have the mean in and the mean out so we can find the gain:
+```{r}
+#compute gain using the average vouts and m_in
+gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
+plot(gain)
+#this is consistent with the max gain of 150 calculated in class.
 ```
 
 
+#Calculating Error
+not really sure how to calculate error of a function. going to take RMSE for each.
+```{r}
+rmserrors <- sqrt(data.frame(
+  vin1 = sum(((m_in-vin1$y)^2))/399, 
+  vin2 = sum(((m_in-vin2$y)^2))/399,
+  vin3 = sum(((m_in-vin3$y)^2))/399,
+  vin4 = sum(((m_in-vin4$y)^2))/399,
+  vin5 = sum(((m_in-vin5$y)^2))/399,
+  vout1 = sum((m_vout$Volts-vout1$y)^2)/399,
+  vout2 = sum((m_vout$Volts-vout2$y)^2)/399,
+  vout3 = sum((m_vout$Volts-vout3$y)^2)/399,
+  vout4 = sum((m_vout$Volts-vout4$y)^2)/399,
+  vout5 = sum((m_vout$Volts-vout5$y)^2)/399
+))
+#error in gain, adding in quadrature: 
+vinerror <-sqrt(sum(rmserrors[1:5]^2))
+vouterror <- sqrt(sum(rmserrors[6:10]^2))
+gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
+#g(f) error
+plot(1:399,unlist(gainerror[1]))
+```
+#Calculating G
 
+```{r}
+capacitance <-87.875*(10^-12)
+capacitanceError <-.594*(10^-12)
+#df is just the x componenent
 
+riemanSum <- function(fa,fb){
+  area <-0.5*(125)*(fb-fa)+fa*125
+  return(area)
+}
 
+resistors<-read.csv("experiment2data1.csv")
 
+C = capacitance
+integrand <- data.frame(
+  gain[2]/(1+(2*pi*C*vin1$x*short)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k1)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k10)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k20)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k35)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k48)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k100)^2)
+  )
+area <- data.frame(
+  G1 =0,
+  G2 =0,
+  G3 =0,
+  G4 =0,
+  G5 =0,
+  G6 =0,
+  G7 =0
+  
+  )
+for(i in 1:length(integrand))
+{
+    for(l in 1:398)
+    {
+      if(is.na(integrand[l+1,i]))
+      {
+        break
+      }
+      else
+      {
+        area[i] <- area[i]+ riemanSum(integrand[l,i],integrand[l+1,i])
+      }
+    }
+}
 
+```
 
+So this returns a gain value G for each resistor 
 
+```{r}
+resistors<-c(0,1000,10000,20000,32500, 48700,100000)
+plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
+```
+Plotting R as a function of V^2, kB, and G
+```{r}
+kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
 
+area2<-area[2:7] #take away the short's data
+y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
+  #v^2 
 
+resistors2 <-resistors[2:7] #take away the short
+plot(resistors2,y_value, main= "Resistance as a function of Gain and Voltage", xlab= "V^2/ (4*kb*G)", ylab = "Resistance")
 
-
-
-
+```
 
