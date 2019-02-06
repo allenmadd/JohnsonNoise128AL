@@ -9,9 +9,11 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+###Experiment 1: Find g(f)
+
 ## Analysis: Step 1: g(f)
 
-Make sure that the data is in the same folder as the R-script (should be automatic if you clone the git repo) (btw I hate myself for saying "clone the git repo")
+Make sure that the data is in the same folder as the R-script.
 
 Plots to verify what the data looks like.
 ```{r}
@@ -48,33 +50,6 @@ names(vout5)<-c("x", "y")
 plot(vout5$y)
 ```
 
-Find the mean of each value:
-It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so only the peak region is selected (thus the ranges present in the y values for the vout values)
-```{r}
-m_vin1<-mean(vin1$y)
-m_vin2<-mean(vin2$y)
-m_vin3<-mean(vin3$y)
-m_vin4<-mean(vin4$y)
-m_vin5<-mean(vin5$y)
-
-m_in<- mean(m_vin1, m_vin2, m_vin3, m_vin4, m_vin5)
-
-m_vout1<-mean(vout1$y[35:44])
-m_vout2<-mean(vout2$y[37:54])
-m_vout3<-mean(vout3$y[35:56])
-m_vout4<-mean(vout4$y[35:53])
-m_vout5<-mean(vout5$y[35:52])
-
-m_out<- mean(m_vout1, m_vout2, m_vout3, m_vout4, m_vout5)
-
-```
-
-Now we have the mean in and the mean out so we can find the gain:
-```{r}
-gF<- m_out/m_in
-print(gF)
-```
-
 Now to calculate the errors for each measurement (which will be propagated into the final error for the gain):
 ```{r}
 vin1_error<- sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
@@ -90,31 +65,46 @@ vout4_error<- sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)
 vout5_error<- sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
 ```
 
-Now we have errors for every measurement. The averages used to calculate gain need errors too.
+Find the mean of each value:
+It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so dont just take average
 ```{r}
-m_vin_error <- sqrt(vin1_error^2+vin2_error^2 + vin3_error^2+ vin4_error^2+vin5_error^2)
-m_vout_error <- sqrt(vout1_error^2+vout2_error^2 + vout3_error^2+ vout4_error^2+vout5_error^2)
-```
-Now we can find the error in the gain function from the error in Vin and Vout
-```{r}
-gF_error<-sqrt(m_vin_error^2 +m_vout_error^2)
-print(gF_error)
-#seems a little small. not sure if I did it right then?
+m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
+#take average of vouts
+m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
 ```
 
-Graph g(f) against frequency
+Now we have the mean in and the mean out so we can find the gain:
 ```{r}
-gF_list= vector()
-for (i in 1:length(vin1$x))
-{
-  mean_vin = mean(vin1$y[i], vin2$y[i], vin3$y[i], vin4$y[i], vin5$y[i])
-  mean_vout= mean(vout1$y[i], vout2$y[i], vout3$y[i], vout4$y[i], vout5$y[i])
-  gF_list[i]=mean_vout/mean_vin
-}
-plot(vin1$x, gF_list) #is this what they mean by plot? Is this what it should look like?
+#compute gain using the average vouts and m_in
+gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
+plot(gain)
+#this is consistent with the max gain of 150 calculated in class.
 ```
 
-## Analysis Step 2: Johnson Noise 1
+#Calculating Error
+not really sure how to calculate error of a function. going to take RMSE for each.
+```{r}
+rmserrors <- sqrt(data.frame(
+  vin1 = sum(((m_in-vin1$y)^2))/399, 
+  vin2 = sum(((m_in-vin2$y)^2))/399,
+  vin3 = sum(((m_in-vin3$y)^2))/399,
+  vin4 = sum(((m_in-vin4$y)^2))/399,
+  vin5 = sum(((m_in-vin5$y)^2))/399,
+  vout1 = sum((m_vout$Volts-vout1$y)^2)/399,
+  vout2 = sum((m_vout$Volts-vout2$y)^2)/399,
+  vout3 = sum((m_vout$Volts-vout3$y)^2)/399,
+  vout4 = sum((m_vout$Volts-vout4$y)^2)/399,
+  vout5 = sum((m_vout$Volts-vout5$y)^2)/399
+))
+#error in gain, adding in quadrature: 
+vinerror <-sqrt(sum(rmserrors[1:5]^2))
+vouterror <- sqrt(sum(rmserrors[6:10]^2))
+gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
+#g(f) error
+plot(1:399,unlist(gainerror[1]))
+```
+
+#Experiment 2: Johnson Noise 1
 Recording the resistor values measured during lab.
 ```{r}
 #everything will be in ohms 
@@ -140,20 +130,14 @@ k48 <- 48650 #secretly 48.7k but again that would be an ugly variable name
 k48error<- 1
 ```
 
-Capacitance for the circuit.
-```{r}
-capacitance <-87.875
-capacitanceError <-.594
-```
-
-Import measurements from experiment 2
+Import Band Voltage measurements from experiment 2
 ```{r}
 experiment2data<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment2data1.csv")
 
 #View(experiment2data)
 ```
 
-Calculate Vmeas
+Calculate Vmeas, V, and Vsystem
 ```{r}
 Vsys<- experiment2data[1,7] #first row 7th column
 VsysError <- experiment2data[1,9]
@@ -175,49 +159,7 @@ Verror<- sqrt(VmeasError^2+ VsysError^2)
 ```
 
 
-###Edward Stuff
-
-Calculate a value for G
-Find the mean of each value:
-It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so dont just take average
-```{r}
-m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
-#take average of vouts
-m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
-```
-
-Now we have the mean in and the mean out so we can find the gain:
-```{r}
-#compute gain using the average vouts and m_in
-gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
-plot(gain)
-#this is consistent with the max gain of 150 calculated in class.
-```
-
-
-#Calculating Error
-not really sure how to calculate error of a function. going to take RMSE for each.
-```{r}
-rmserrors <- sqrt(data.frame(
-  vin1 = sum(((m_in-vin1$y)^2))/399, 
-  vin2 = sum(((m_in-vin2$y)^2))/399,
-  vin3 = sum(((m_in-vin3$y)^2))/399,
-  vin4 = sum(((m_in-vin4$y)^2))/399,
-  vin5 = sum(((m_in-vin5$y)^2))/399,
-  vout1 = sum((m_vout$Volts-vout1$y)^2)/399,
-  vout2 = sum((m_vout$Volts-vout2$y)^2)/399,
-  vout3 = sum((m_vout$Volts-vout3$y)^2)/399,
-  vout4 = sum((m_vout$Volts-vout4$y)^2)/399,
-  vout5 = sum((m_vout$Volts-vout5$y)^2)/399
-))
-#error in gain, adding in quadrature: 
-vinerror <-sqrt(sum(rmserrors[1:5]^2))
-vouterror <- sqrt(sum(rmserrors[6:10]^2))
-gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
-#g(f) error
-plot(1:399,unlist(gainerror[1]))
-```
-#Calculating G
+##Calculating G
 
 ```{r}
 capacitance <-87.875*(10^-12)
@@ -268,13 +210,13 @@ for(i in 1:length(integrand))
 
 ```
 
-So this returns a gain value G for each resistor 
+So this returns a gain value G for each resistor (called "area")
 
 ```{r}
 resistors<-c(0,1000,10000,20000,32500, 48700,100000)
 plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
 ```
-#Plotting R as a function of V^2, kB, and G
+##Plotting R as a function of V^2, kB, and G
 
 IM VERY CONUFSED. I HAVE 4 GRAPHS HERE BECAUSE IM NOT SURE WHAT GOES ON THE Y AXIS AND WHAT KIND OF FIT LINE WE NEED SO I HAVE ALL 4 COMBOS (Y AND X SWITCHED AND EACH OF A LINEAR OR POLYNOMIAL FIT LINE)
 ```{r}
@@ -287,60 +229,72 @@ y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
 #prepare data for graphing
 resistors2 <-resistors[2:7] #take away the short
 y<- unlist(y_value, use.names=FALSE)
+```
 
-#this is the data with resistor as the x axis and the other term as the x axis. I didd this because I wasnt sure what to do honestly.
-fit  <- lm(y~resistors2)
-plot(resistors2,y_value, main= "Resistance as a function of Gain and Voltage with a 1D Fit", xlab= "Resistance", ylab = "V^2/ (4*kb*G)")
-lines(resistors2, predict(fit, data.frame(resistors2)), col="red")
+
+```{r}
+#I'll try finding temperatures
+Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
+summary(Temperature) #these are the correct values
+plot(resistors2, Temperature)
+```
+
+```{r}
+#
+#resistor as the x axis and the other term as the y axis.
+#
+resistors3<-resistors2*100
+fit  <- lm(y~resistors3)
+plot(resistors3,y_value, main= "Resistance as a function of Gain and Voltage with a 1D Fit", xlab= "Resistance", ylab = "V^2/ (4*kb*G)")
+lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
 legend("topleft", legend=c("Fit Line"),
        col=c("red"), lty=1:2, cex=0.8)
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
-plot(y, resistors2, main="Plot of Gain and Voltage as a function of Resistance with a 1D Fit")
-fit  <- lm(resistors2~y)
-lines(y, predict(fit,data.frame(y)),col="pink")
-legend("topleft", legend=c("Fit Line"),
-       col=c("pink"), lty=1:2, cex=0.8)
-summary(fit)
-plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
-
 ```
-So that gave us a giant value so I'm gonna try again
 
 ```{r}
-
-fit2 <- lm(y~poly(resistors2,2,raw=TRUE))
+#2nd degree fit
+fit2 <- lm(y~poly(resistors3,2,raw=TRUE))
 
 #plot same as above this time with a 2d fit line
-plot(resistors2,y_value, main= "Gain and Voltage as a function of Resistance with a 2nd order fit", ylab= "V^2/ (4*kb*G)", xlab = "Resistance")
-lines(resistors2, predict(fit2, data.frame(resistors2)), col="blue")
+plot(resistors3,y_value, main= "Gain and Voltage as a function of Resistance with a 2nd order fit", ylab= "V^2/ (4*kb*G)", xlab = "Resistance")
+lines(resistors3, predict(fit2, data.frame(resistors3)), col="blue")
 legend("topleft", legend=c("Polynomial Fit Line"),
        col=c("blue"), lty=1:2, cex=0.8)
 
 summary(fit2)
 plot(fit2$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
-
-#plot with switched variables and a 2d fitl ine 
-fit2 <- lm(y~poly(y,2,raw=TRUE))
-plot(y, resistors2, main= "Gain and Voltage as a function of Resistance with a 2nd order fit")
-lines(y, predict(fit2, data.frame(y)), col="orange")
-legend("topleft", legend=c("Polynomial Fit Line"),
-       col=c("orange"), lty=1:2, cex=0.8)
-summary(fit2)
-plot(fit2$residuals, main = "Residuals of the fit line", ylab= "Residuals")
-
-
 ```
-I'm not getting data that makes sense. Please h e l p.
 
+So I have fit a 1st order polynomial line and a 2nd order polynomial line. Both give reasonable predictions, both have reasonably random residuals. If I didn't know better, I'd pick the 1D line. But Nate told me to look for 2nd order relationships so I will check to see if the data is normally distributed so I can pick based on their p-values.
+```{r}
+shapiro.test(fit$residuals)
 
-#Experiment 3: Johnson Noise at Aboslute 0
+shapiro.test(fit2$residuals)
+```
+The 2nd order fit is better. The Shapiro-Wilk normality test tells us the assumptions of normality and homogeniety of variance were met, as there weren’t any obvious abnormalities on the residual plots and the Shapiro-Wik p-value for residuals was p=.147 (fail to reject H0 that data is normal for the 2D line but not for the 1D line).
+
+So because of this we will go with the 2nd order polynomial fit line.
+
+@EDWARD HELLO
+
+I NEED TO GET THE VALUE OF ABSOLUTE 0 OUT OF THIS BUT I GOT THE TEMPERATURES OF EACH RESISTOR AND THEY HONESTLY MAKE SENSE.
+
+I WILL NEED TO FIGURE OUT HOW TO GET ABSOLUTE 0, THEN ILL DO THE ANALYSIS FOR THE NEXT PART.
+
+ON THURSDAY WE CAN TAKE TURNS WORKING ON THE REPORT AND DOING DATA ANALYSIS FOR THE 2ND DATA SET WE TOOK
+
+###Experiment 3: Johnson Noise - Boltzmann Constant
 ```{r}
 
+y_value2<- (V^2)/(4*resistors2*area2)
 
 
 ```
+
+
 
