@@ -1,6 +1,6 @@
 ---
-title: "analysisStep3"
-author: "Madeleine Allen"
+title: "Experiment 3: kB"
+author: "Madeleine Allen Edward Piper"
 date: "2/6/2019"
 output: pdf_document
 ---
@@ -8,17 +8,14 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r}
+```{r, echo=FALSE}
 vin1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN1.CSV")
 
 names(vin1)<-c("x", "y")
-plot(vin1$x)
-plot(vin1$y)
-
 ```
 
-Now I'll upload the rest of the data. I'll plot an out graph for reference too.
-```{r}
+
+```{r, echo=FALSE}
 vin2<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN2.CSV")
 names(vin2)<-c("x", "y")
 
@@ -39,11 +36,9 @@ vout4<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT4.CSV")
 names(vout4)<-c("x", "y")
 vout5<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT5.CSV")
 names(vout5)<-c("x", "y")
-plot(vout5$y)
 ```
 
-Now to calculate the errors for each measurement (which will be propagated into the final error for the gain):
-```{r}
+```{r, echo= FALSE}
 vin1_error<- sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
 vin2_error<-sd(vin2$y, na.rm=TRUE)/sqrt(length(vin2$y[!is.na(vin2$y)]))
 vin3_error<- sd(vin3$y, na.rm=TRUE)/sqrt(length(vin3$y[!is.na(vin3$y)]))
@@ -57,25 +52,19 @@ vout4_error<- sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)
 vout5_error<- sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
 ```
 
-Find the mean of each value:
-It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so dont just take average
-```{r}
+```{r, echo=FALSE}
 m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
 #take average of vouts
 m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
 ```
 
-Now we have the mean in and the mean out so we can find the gain:
-```{r}
+```{r, echo=FALSE}
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
-plot(gain)
 #this is consistent with the max gain of 150 calculated in class.
 ```
 
-#Calculating Error
-not really sure how to calculate error of a function. going to take RMSE for each.
-```{r}
+```{r, echo=FALSE}
 rmserrors <- sqrt(data.frame(
   vin1 = sum(((m_in-vin1$y)^2))/399, 
   vin2 = sum(((m_in-vin2$y)^2))/399,
@@ -93,10 +82,8 @@ vinerror <-sqrt(sum(rmserrors[1:5]^2))
 vouterror <- sqrt(sum(rmserrors[6:10]^2))
 gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
 #g(f) error
-plot(1:399,unlist(gainerror[1]))
 ```
 
-#Experiment 2: Johnson Noise 1
 Recording the resistor values measured during lab.
 ```{r}
 #everything will be in ohms 
@@ -125,10 +112,7 @@ k48error<- 1
 ###Experiment 3: Johnson Noise - Boltzmann Constant
 ```{r}
 experiment3data1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment3data1.csv")
-
 ```
-
-
 
 Calculate Vmeas, V, and Vsystem
 ```{r}
@@ -145,6 +129,7 @@ Vmeask100<-experiment3data1[7,7]
 Vmeas<-c(Vmeask1, Vmeask10, Vmeask20, Vmeask32, Vmeask48, Vmeask100)
 
 #need to redo the error later (2/5)
+
 VmeasError<-sqrt((sum(experiment3data1[2:7,9])^2))
 
 V<- sqrt(-Vsys^2+Vmeas^2)
@@ -166,7 +151,7 @@ riemanSum <- function(fa,fb){
   return(area)
 }
 
-resistors<-read.csv("experiment3data1.csv")
+#resistors<-read.csv("experiment3data1.csv")
 
 C = capacitance
 integrand <- data.frame(
@@ -227,8 +212,6 @@ Temperature2<-unlist(Temperature, use.names = FALSE)
 
 summary(Temperature2)
 
-
-
 #2nd degree fit
 fit <- lm(y2~Temperature2)
 
@@ -244,5 +227,6 @@ plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
 
 ```
-
-Seems small for kb
+You have to divide by 100 for some reason in all of the results. Our result for the slope was 1.381*10^-21 but dividing by 100 gives us:
+1.381*10^-23 with an error of
+3.779*10^-38

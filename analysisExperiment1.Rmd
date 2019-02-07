@@ -1,0 +1,105 @@
+---
+title: "Johnson Noise 128AL"
+author: "Madeleine Allen, Edward Piper"
+date: "1/31/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Experiment 1: Find g(f)
+
+## Analysis: Step 1: g(f)
+
+Make sure that the data is in the same folder as the R-script.
+
+Plots to verify what the data looks like.
+```{r}
+vin1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN1.CSV")
+
+names(vin1)<-c("x", "y")
+plot(vin1$x)
+plot(vin1$y)
+
+```
+
+Now I'll upload the rest of the data. I'll plot an out graph for reference too.
+```{r}
+vin2<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN2.CSV")
+names(vin2)<-c("x", "y")
+
+vin3<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN3.CSV")
+names(vin3)<-c("x", "y")
+vin4<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN4.CSV")
+names(vin4)<-c("x", "y")
+vin5<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN5.CSV")
+names(vin5)<-c("x", "y")
+
+vout1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT1.CSV")
+names(vout1)<-c("x", "y")
+vout2<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT2.CSV")
+names(vout2)<-c("x", "y")
+vout3<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT3.CSV")
+names(vout3)<-c("x", "y")
+vout4<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT4.CSV")
+names(vout4)<-c("x", "y")
+vout5<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT5.CSV")
+names(vout5)<-c("x", "y")
+plot(vout5$y)
+```
+
+Now to calculate the errors for each measurement (which will be propagated into the final error for the gain):
+```{r}
+vin1_error<- sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
+vin2_error<-sd(vin2$y, na.rm=TRUE)/sqrt(length(vin2$y[!is.na(vin2$y)]))
+vin3_error<- sd(vin3$y, na.rm=TRUE)/sqrt(length(vin3$y[!is.na(vin3$y)]))
+vin4_error<- sd(vin4$y, na.rm=TRUE)/sqrt(length(vin4$y[!is.na(vin4$y)]))
+vin5_error<- sd(vin5$y, na.rm=TRUE)/sqrt(length(vin5$y[!is.na(vin5$y)]))
+
+vout1_error<-sd(vout1$y[35:44], na.rm=TRUE)/sqrt(length(vout1$y[!is.na(vout1$y)]))
+vout2_error<- sd(vout2$y[37:54], na.rm=TRUE)/sqrt(length(vout2$y[!is.na(vout2$y)]))
+vout3_error<- sd(vout3$y[36:56], na.rm=TRUE)/sqrt(length(vout3$y[!is.na(vout3$y)]))
+vout4_error<- sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)]))
+vout5_error<- sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
+```
+
+Find the mean of each value:
+It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so dont just take average
+```{r}
+m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
+#take average of vouts
+m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
+```
+
+Now we have the mean in and the mean out so we can find the gain:
+```{r}
+#compute gain using the average vouts and m_in
+gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
+plot(gain)
+#this is consistent with the max gain of 150 calculated in class.
+```
+
+#Calculating Error
+not really sure how to calculate error of a function. going to take RMSE for each.
+```{r}
+rmserrors <- sqrt(data.frame(
+  vin1 = sum(((m_in-vin1$y)^2))/399, 
+  vin2 = sum(((m_in-vin2$y)^2))/399,
+  vin3 = sum(((m_in-vin3$y)^2))/399,
+  vin4 = sum(((m_in-vin4$y)^2))/399,
+  vin5 = sum(((m_in-vin5$y)^2))/399,
+  vout1 = sum((m_vout$Volts-vout1$y)^2)/399,
+  vout2 = sum((m_vout$Volts-vout2$y)^2)/399,
+  vout3 = sum((m_vout$Volts-vout3$y)^2)/399,
+  vout4 = sum((m_vout$Volts-vout4$y)^2)/399,
+  vout5 = sum((m_vout$Volts-vout5$y)^2)/399
+))
+#error in gain, adding in quadrature: 
+vinerror <-sqrt(sum(rmserrors[1:5]^2))
+vouterror <- sqrt(sum(rmserrors[6:10]^2))
+gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
+#g(f) error
+plot(1:399,unlist(gainerror[1]))
+```
