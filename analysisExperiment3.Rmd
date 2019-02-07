@@ -107,6 +107,8 @@ k1error <- .01
 
 k48 <- 48650 #secretly 48.7k but again that would be an ugly variable name
 k48error<- 1
+resistors<-c(k1,k10,k20,k35, k48,k100)
+resistorserror<-c(k1error, k10error, k20error, k35error, k48error, k100error)
 ```
 
 ###Experiment 3: Johnson Noise - Boltzmann Constant
@@ -128,7 +130,6 @@ Vmeask100<-experiment3data1[7,7]
 
 Vmeas<-c(Vmeask1, Vmeask10, Vmeask20, Vmeask32, Vmeask48, Vmeask100)
 
-#need to redo the error later (2/5)
 
 VmeasError<-sqrt((sum(experiment3data1[2:7,9])^2))
 
@@ -192,25 +193,34 @@ for(i in 1:length(integrand))
 
 So this returns a gain value G for each resistor (called "area")
 
-```{r}
-resistors<-c(0,1000,10000,20000,32500, 48700,100000)
-plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
-```
 
 ```{r}
 #prepare the data for graphing
 kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
 
 area2<-area[2:7] #take away the short's data
-resistors2 <-resistors[2:7] #take away the short
+resistors2 <-resistors[1:7] 
 y_value2<- (V^2)/(4*resistors2*area2)
 y2<- unlist(y_value2, use.names=FALSE)
 
-
+#calculate the temperatures
 Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
 Temperature2<-unlist(Temperature, use.names = FALSE)
 
-summary(Temperature2)
+```
+
+```{r, echo=FALSE}
+
+Temperature3<-c(71.82, 73.19, 74.53, 74.65, 75.43, 78.52)
+
+print(Temperature3)
+```
+
+
+```{r}
+Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
+Temperature2<-unlist(Temperature, use.names = FALSE)
+Temperature2Error<-Temperature2*sqrt((V^2/Verror^2)+(resistors2/resistorserror)^2)
 
 #2nd degree fit
 fit <- lm(y2~Temperature2)
@@ -218,15 +228,15 @@ fit <- lm(y2~Temperature2)
 #plot same as above this time with a 2d fit line
 plot(Temperature2,y2, main= "Gain and Voltage as a function of Temperature with a 2nd order fit", ylab= "V^2/ (4*R*G)", xlab = "Temperature")
 lines(Temperature2, predict(fit, data.frame(Temperature2)), col="blue")
+arrows(Temperature2, mean(Temperature2)-Temperature2Error, Temperature2, mean(Temperature2) + Temperature2Error, length=0.05, angle=90, code=3)
 legend("topleft", legend=c("Polynomial Fit Line"),
        col=c("blue"), lty=1:2, cex=0.8)
+
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
-
-
 ```
 You have to divide by 100 for some reason in all of the results. Our result for the slope was 1.381*10^-21 but dividing by 100 gives us:
 1.381*10^-23 with an error of
-3.779*10^-38
+

@@ -103,3 +103,11 @@ gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
 #g(f) error
 plot(1:399,unlist(gainerror[1]))
 ```
+
+```{r}
+df <- gain
+
+ggplot(df, aes(x=gain$Frequency, y=gain$Volts)) + 
+geom_pointrange(aes(ymin=length(gain$Volts)-gainerror$Volts, ymax=length(gain$Volts)+gainerror$Volts))
+
+```
