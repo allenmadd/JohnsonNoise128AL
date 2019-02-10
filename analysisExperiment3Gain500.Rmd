@@ -55,7 +55,9 @@ m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4
 ```{r, echo=FALSE}
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
-#this is consistent with the max gain of 150 calculated in class.
+print(max(gain$Volts))
+#the max gain is 368.92, meaning that although we wanted gain 500, we have a loss. 
+#This is due to the fact that the voltage gets lost in the chain from the white noise generator->amp->filter->analyzer
 ```
 
 ```{r, echo=FALSE}
