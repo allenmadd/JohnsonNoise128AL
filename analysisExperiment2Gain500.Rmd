@@ -150,13 +150,13 @@ riemanSum <- function(fa,fb){
 
 C = capacitance
 integrand <- data.frame(
-  gain[2]/(1+(2*pi*C*vin1$x*short)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k1)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k10)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k20)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k35)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k48)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k100)^2)
+  gain[2]^2/(1+(2*pi*C*vin1$x*short)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k1)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k10)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k20)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k35)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k48)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k100)^2)
   )
 area <- data.frame(
   G1 =0,
