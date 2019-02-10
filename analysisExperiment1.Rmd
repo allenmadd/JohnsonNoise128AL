@@ -1,5 +1,5 @@
 ---
-title: "Determining g(f) for Gain 250"
+title: "Determining g(f) for Gain 150"
 author: "Madeleine Allen, Edward Piper"
 date: "2/3/2019"
 output: pdf_document

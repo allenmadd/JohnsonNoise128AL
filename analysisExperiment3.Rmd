@@ -1,5 +1,5 @@
 ---
-title: "Experiment 3: kB for Gain 250"
+title: "Experiment 3: kB for Gain 150"
 author: "Madeleine Allen Edward Piper"
 date: "2/6/2019"
 output: pdf_document
@@ -153,13 +153,13 @@ riemanSum <- function(fa,fb){
 
 C = capacitance
 integrand <- data.frame(
-  gain[2]/(1+(2*pi*C*vin1$x*short)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k1)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k10)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k20)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k35)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k48)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k100)^2)
+  gain[2]^2/(1+(2*pi*C*vin1$x*short)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k1)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k10)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k20)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k35)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k48)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k100)^2)
   )
 area <- data.frame(
   G1 =0,
@@ -201,14 +201,13 @@ y_value2<- (V^2)/(4*resistors2*area2)
 y2<- unlist(y_value2, use.names=FALSE)
 
 #calculate the temperatures
-Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
+Temperature<- ((V^2)/(4*kb*area2*resistors2))
 Temperature2<-unlist(Temperature, use.names = FALSE)
 fit <- lm(y2~Temperature2)
 ```
 
 
 ```{r}
-#1st degree fit
 Temperature2<-Temperature2/100
 Temperature2[2]<- Temperature2[2]/10
 print(Temperature2)

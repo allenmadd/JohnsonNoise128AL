@@ -1,5 +1,5 @@
 ---
-title: "Experiment 2: Temperatures for Gain 250"
+title: "Experiment 2: Temperatures for Gain 150"
 author: "Madeleine Allen, Edward Piper"
 date: "2/7/2019"
 output: pdf_document
@@ -63,8 +63,6 @@ m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4
 ```{r, echo=FALSE}
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
-
-#this is consistent with the max gain of 150 calculated in class.
 ```
 
 ```{r, echo=FALSE}
@@ -84,7 +82,6 @@ rmserrors <- sqrt(data.frame(
 vinerror <-sqrt(sum(rmserrors[1:5]^2))
 vouterror <- sqrt(sum(rmserrors[6:10]^2))
 gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
-#g(f) error
 ```
 
 #Experiment 2: Johnson Noise 1
@@ -158,13 +155,13 @@ riemanSum <- function(fa,fb){
 
 C = capacitance
 integrand <- data.frame(
-  gain[2]/(1+(2*pi*C*vin1$x*short)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k1)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k10)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k20)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k35)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k48)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k100)^2)
+  gain[2]^2/(1+(2*pi*C*vin1$x*short)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k1)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k10)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k20)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k35)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k48)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k100)^2)
   )
 area <- data.frame(
   G1 =0,
@@ -196,14 +193,10 @@ area2error=sqrt((capacitance/capacitanceError)^2+(resistors/resistorserror)^2)
 
 So this returns a gain value G for each resistor (called "area")
 
-```{r}
-#resistors<-c(0,1000,10000,20000,32500, 48700,100000)
-#plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
-```
 ##Plotting R as a function of V^2, kB, and G
 
 ```{r}
-kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
+kb<- 1.381 *10^-23 #m2 kg s-2 K-1
 
 area2<-area[2:7] #take away the short's data
 y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
@@ -215,16 +208,10 @@ y<- unlist(y_value, use.names=FALSE)
 
 
 ```{r}
-#I'll try finding temperatures
-
-Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
-
+Temperature<- ((V^2)/(4*kb*area2*resistors2))
 Temperature2<-unlist(Temperature, use.names = FALSE)
+Temperature2[2]<-Temperature2[2]/10
 print(Temperature2) #these are the correct values
-```
-```{r}
-#Error Propagation
-
 ```
 
 Create a fit line
@@ -232,26 +219,19 @@ Create a fit line
 #
 #resistor as the x axis and the other term as the y axis.
 #
-resistors3<-resistors2[1:6]*100
-resistors3error <- resistors3*sqrt((V^2/Verror^2)+((area2/area2error)^2))
+resistors3<-resistors2[1:6]
+resistors3[2]<-resistors3[2]*10
+resistors3error <- resistors3*sqrt((V^2/Verror^2)+((area2/area2error)^2))/100
 fit  <- lm(y~0+resistors3)
 ```
 
 ```{r}
-rm(gain) 
-rm(gainerror)
-
-gain=data.frame()
-gainerror=data.frame()
 library(ggplot2)
 qplot(unlist(resistors3),unlist(y))+geom_errorbar(aes(x=unlist(resistors3), ymin=unlist(y-resistors3error), ymax=unlist(y+resistors3error)), width=0.25)+
   geom_smooth(method="lm", se=FALSE, fullrange=TRUE, level=0.95)+labs(title = "Resistance as a function of Gain and Voltage with a 1D Fit", x= "Resistance", y = "V^2/ (4*kb*G)")
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
-
-#lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
-#legend("topleft", legend=c("Fit Line"), col=c("red"), lty=1:2, cex=0.8)
 ```
 
 
