@@ -1,7 +1,7 @@
 ---
-title: "Experiment 2: Temperatures for Gain 250"
-author: "Madeleine Allen, Edward Piper"
-date: "2/7/2019"
+title: "Experiment 3: kB for Gain 500"
+author: "Madeleine Allen Edward Piper"
+date: "2/9/2019"
 output: pdf_document
 ---
 
@@ -9,38 +9,30 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, echo= FALSE}
-vin1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN1.CSV")
-
+```{r}
+vin1<-read.csv("V1.CSV")
 names(vin1)<-c("x", "y")
-```
-
-```{r, echo=FALSE}
-vin2<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN2.CSV")
+vin2<-read.csv("V2.CSV")
 names(vin2)<-c("x", "y")
-
-vin3<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN3.CSV")
+vin3<-read.csv("V3.CSV")
 names(vin3)<-c("x", "y")
-vin4<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN4.CSV")
+vin4<-read.csv("V4.CSV")
 names(vin4)<-c("x", "y")
-vin5<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN5.CSV")
+vin5<-read.csv("V5.CSV")
 names(vin5)<-c("x", "y")
-
-vout1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT1.CSV")
+vout1<-read.csv("O1.CSV")
 names(vout1)<-c("x", "y")
-vout2<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT2.CSV")
+vout2<-read.csv("O2.CSV")
 names(vout2)<-c("x", "y")
-vout3<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT3.CSV")
+vout3<-read.csv("O3.CSV")
 names(vout3)<-c("x", "y")
-vout4<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT4.CSV")
+vout4<-read.csv("O4.CSV")
 names(vout4)<-c("x", "y")
-vout5<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT5.CSV")
+vout5<-read.csv("O5.CSV")
 names(vout5)<-c("x", "y")
-
 ```
 
-
-```{r, echo=FALSE}
+```{r}
 vin1_error<- sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
 vin2_error<-sd(vin2$y, na.rm=TRUE)/sqrt(length(vin2$y[!is.na(vin2$y)]))
 vin3_error<- sd(vin3$y, na.rm=TRUE)/sqrt(length(vin3$y[!is.na(vin3$y)]))
@@ -54,7 +46,7 @@ vout4_error<- sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)
 vout5_error<- sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
 ```
 
-```{r, echo=FALSE}
+```{r}
 m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
 #take average of vouts
 m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
@@ -63,7 +55,6 @@ m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4
 ```{r, echo=FALSE}
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
-
 #this is consistent with the max gain of 150 calculated in class.
 ```
 
@@ -87,9 +78,8 @@ gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
 #g(f) error
 ```
 
-#Experiment 2: Johnson Noise 1
 Recording the resistor values measured during lab.
-```{r}
+```{r, echo=FALSE}
 #everything will be in ohms 
 short<- .03
 shortError<-.001
@@ -111,40 +101,41 @@ k1error <- .01
 
 k48 <- 48650 #secretly 48.7k but again that would be an ugly variable name
 k48error<- 1
-
 resistors<-c(k1,k10,k20,k35, k48,k100)
 resistorserror<-c(k1error, k10error, k20error, k35error, k48error, k100error)
 ```
 
-Import Band Voltage measurements from experiment 2
+###Experiment 3: Johnson Noise - Boltzmann Constant
 ```{r}
-experiment2data<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment2data1.csv")
+experiment3data1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment3data2.csv")
 ```
 
 Calculate Vmeas, V, and Vsystem
 ```{r}
-Vsys<- experiment2data[1,7] #first row 7th column
-VsysError <- experiment2data[1,9]
+Vsys<- experiment3data1[1,7] #first row 7th column
+VsysError <- experiment3data1[1,9]
 
-Vmeask1<- (experiment2data[2,7])
-Vmeask10<-experiment2data[3,7]
-Vmeask20 <-experiment2data[4,7]
-Vmeask32<-experiment2data[5,7]
-Vmeask48<-experiment2data[6,7]
-Vmeask100<-experiment2data[7,7]
+Vmeask1<- (experiment3data1[2,7])
+Vmeask10<-experiment3data1[3,7]
+Vmeask20 <-experiment3data1[4,7]
+Vmeask32<-experiment3data1[5,7]
+Vmeask48<-experiment3data1[6,7]
+Vmeask100<-experiment3data1[7,7]
 
 Vmeas<-c(Vmeask1, Vmeask10, Vmeask20, Vmeask32, Vmeask48, Vmeask100)
 
-#need to redo the error later (2/5)
-VmeasError<-sqrt((sum(experiment2data[2:7,9])^2))
+VmeasError<-sqrt((sum(experiment3data1[2:7,9])^2))
 
 V<- sqrt(-Vsys^2+Vmeas^2)
 Verror<- sqrt(VmeasError^2+ VsysError^2)
 ```
 
+
 ##Calculating G
 
 ```{r}
+gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
+
 capacitance <-87.875*(10^-12)
 capacitanceError <-.594*(10^-12)
 #df is just the x componenent
@@ -153,8 +144,6 @@ riemanSum <- function(fa,fb){
   area <-0.5*(125)*(fb-fa)+fa*125
   return(area)
 }
-
-#resistors<-read.csv("experiment2data1.csv")
 
 C = capacitance
 integrand <- data.frame(
@@ -191,68 +180,62 @@ for(i in 1:length(integrand))
     }
 }
 
-area2error=sqrt((capacitance/capacitanceError)^2+(resistors/resistorserror)^2)
 ```
 
 So this returns a gain value G for each resistor (called "area")
 
-```{r}
-#resistors<-c(0,1000,10000,20000,32500, 48700,100000)
-#plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
-```
-##Plotting R as a function of V^2, kB, and G
 
 ```{r}
+#prepare the data for graphing
 kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
 
-area2<-area[2:7] #take away the short's data
-y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
+area2<-area[2:7]/100 #take away the short's data
+resistors2 <-resistors[1:6] 
+y_value2<- (V^2)/(4*resistors2*area2)
+y2<- unlist(y_value2, use.names=FALSE)
 
-#prepare data for graphing
-resistors2 <-resistors[1:7]
-y<- unlist(y_value, use.names=FALSE)
-```
-
-
-```{r}
-#I'll try finding temperatures
-
+#calculate the temperatures
 Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
-
 Temperature2<-unlist(Temperature, use.names = FALSE)
-print(Temperature2) #these are the correct values
-```
-```{r}
-#Error Propagation
-
+fit <- lm(y2~Temperature2)
 ```
 
-Create a fit line
+
 ```{r}
-#
-#resistor as the x axis and the other term as the y axis.
-#
-resistors3<-resistors2[1:6]*100
-resistors3error <- resistors3*sqrt((V^2/Verror^2)+((area2/area2error)^2))
-fit  <- lm(y~0+resistors3)
+#Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
+#Temperature2<-unlist(Temperature, use.names = FALSE)
+
+#Temperature3Error<-Temperature3*sqrt((V^2/Verror^2)+(resistors2/resistorserror)^2)
+
+#1st degree fit
+Temperature2<-Temperature2/500
+Temperature2[2]<- Temperature2[2]/10
+print(Temperature2)
+Temperature2Error<-Temperature2*sqrt((V^2/Verror^2)+(resistors2/resistorserror)^2)
+```
+
+```{r, echo=FALSE}
+Temperature2Error<-Temperature2Error/1000000
+
+tempAvg<-mean(Temperature2)
+t1 = (((tempAvg-Temperature2[1])^2))/sqrt(6)
+t2 = (((tempAvg-Temperature2[2])^2))/sqrt(6)
+t3 = (((tempAvg-Temperature2[3])^2))/sqrt(6)
+t4 = (((tempAvg-Temperature2[4])^2))/sqrt(6)
+t5 = (((tempAvg-Temperature2[5])^2))/sqrt(6)
+t6 = (((tempAvg-Temperature2[6])^2))/sqrt(6)
+
+Temperature2Error2<- sqrt(c(t1, t2, t3, t4, t5, t6))
 ```
 
 ```{r}
-rm(gain) 
-rm(gainerror)
 
-gain=data.frame()
-gainerror=data.frame()
 library(ggplot2)
-qplot(unlist(resistors3),unlist(y))+geom_errorbar(aes(x=unlist(resistors3), ymin=unlist(y-resistors3error), ymax=unlist(y+resistors3error)), width=0.25)+
-  geom_smooth(method="lm", se=FALSE, fullrange=TRUE, level=0.95)+labs(title = "Resistance as a function of Gain and Voltage with a 1D Fit", x= "Resistance", y = "V^2/ (4*kb*G)")
+qplot((Temperature2),(y2))+geom_errorbar(aes(x=(Temperature2), ymin=(y2-Temperature2Error2), ymax=(y2+Temperature2Error2)), width=0.25)+
+  geom_smooth(method="lm", se=FALSE, fullrange=TRUE, level=0.95)+labs(title = "Temperature vs Voltage/GR", x= "Temperature", y = "V^2/ (4*G*R)")
+
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
-#lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
-#legend("topleft", legend=c("Fit Line"), col=c("red"), lty=1:2, cex=0.8)
 ```
-
-
-Then, to find the value of absolute 0 in Celsius, we use the recorded room temperature (20.5 C) and the average Temperature (277.75K). Solving for absolute 0, you get -257.3. We expected to find -273.15.

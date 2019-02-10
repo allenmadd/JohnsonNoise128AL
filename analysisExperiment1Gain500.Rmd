@@ -1,7 +1,7 @@
 ---
-title: "Determining g(f) for Gain 250"
+title: "Determining g(F) for Gain 500"
 author: "Madeleine Allen, Edward Piper"
-date: "2/3/2019"
+date: "2//2019"
 output: pdf_document
 ---
 
@@ -15,29 +15,25 @@ Make sure that the data is in the same folder as the R-script (should be automat
 
 Plots to verify what the data looks like.
 ```{r}
-vin1<-read.csv("VIN1.CSV")
+vin1<-read.csv("V1.CSV")
 names(vin1)<-c("x", "y")
-```
-
-Now I'll upload the rest of the data. I'll plot an out graph for reference too.
-```{r}
-vin2<-read.csv("VIN2.CSV")
+vin2<-read.csv("V2.CSV")
 names(vin2)<-c("x", "y")
-vin3<-read.csv("VIN3.CSV")
+vin3<-read.csv("V3.CSV")
 names(vin3)<-c("x", "y")
-vin4<-read.csv("VIN4.CSV")
+vin4<-read.csv("V4.CSV")
 names(vin4)<-c("x", "y")
-vin5<-read.csv("VIN5.CSV")
+vin5<-read.csv("V5.CSV")
 names(vin5)<-c("x", "y")
-vout1<-read.csv("VOUT1.CSV")
+vout1<-read.csv("O1.CSV")
 names(vout1)<-c("x", "y")
-vout2<-read.csv("VOUT2.CSV")
+vout2<-read.csv("O2.CSV")
 names(vout2)<-c("x", "y")
-vout3<-read.csv("VOUT3.CSV")
+vout3<-read.csv("O3.CSV")
 names(vout3)<-c("x", "y")
-vout4<-read.csv("VOUT4.CSV")
+vout4<-read.csv("O4.CSV")
 names(vout4)<-c("x", "y")
-vout5<-read.csv("VOUT5.CSV")
+vout5<-read.csv("O5.CSV")
 names(vout5)<-c("x", "y")
 ```
 
@@ -57,6 +53,7 @@ gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
 #this is consistent with the max gain of 150 calculated in class.
 ```
 #Calculating Error
+not really sure how to calculate error of a function. going to take RMSE for each.
 ```{r}
 rmserrors <- sqrt(data.frame(
   vin1 = sum(((m_in-vin1$y)^2))/399, 
@@ -80,6 +77,7 @@ gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
 #Plot g(f)
 ```{r}
 library(ggplot2)
-qplot(unlist(gain$Frequency[24:80]),unlist(gain$Volts[24:80]))+geom_errorbar(aes(x=unlist(gain$Frequency[24:80]), ymin=unlist(gain$Volts[24:80]-gainerror$Volts[24:80]), ymax=unlist(gain$Volts[24:80]+gainerror$Volts[24:80])), width=0.25)+labs(title = "The Gain Function g(F)", x= "Frequency (Hz)", y = "Gain")
+#qplot(unlist(gain$Frequency[24:80]),unlist(gain$Volts[24:80]))+geom_errorbar(aes(x=unlist(gain$Frequency[24:80]), ymin=unlist(gain$Volts[24:80]-gainerror$Volts[24:80]), ymax=unlist(gain$Volts[24:80]+gainerror$Volts[24:80])), width=0.25)+labs(title = "The Gain Function g(F)", x= "Frequency (Hz)", y = "Gain")
 
+qplot(unlist(gain$Frequency[11:41]),unlist(gain$Volts[11:41]))+geom_errorbar(aes(x=unlist(gain$Frequency[11:41]), ymin=unlist(gain$Volts[11:41]-gainerror$Volts[11:41]), ymax=unlist(gain$Volts[11:41]+gainerror$Volts[11:41])), width=0.25)+labs(title = "The Gain Function g(F)", x= "Frequency (Hz)", y = "Gain")
 ```
