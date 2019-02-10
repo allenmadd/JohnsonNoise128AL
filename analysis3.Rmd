@@ -148,21 +148,8 @@ for(i in 1:length(integrand)){
 ```
 
 ```{r ErrorShit}
-
-qplot(unlist(gain[1]),unlist(gain[2]))+geom_errorbar(aes(x=unlist(gain[1]), ymin=unlist(gain[2]-gainerror[1]), ymax=unlist(gain[2]+gainerror[1])), width=0.25)
-
-
-library("Hmisc")
-plot(gain[1], gain[2], type="n")
-with (
-  data = gain
-  , expr = errbar(gain[1], gain[2], gain[2]+(gainerror[1]), gain[2]-(gainerror[1]), add=T, pch=1, cap=.1)
-)
-with (
-  data = gain
-  , expr = errbar(gain[1], gain[2], gain[2]+(gainerror[1]), gain[2]-(gainerror[1]), add=F, pch=1, cap=.015, log="x")
-)
-
+#plotting some errors
+qplot(unlist(gain[1]),unlist(gain[2]), xlab = "Frequency (Hz)", ylab = "Gain", xlim=c(1,15000))+geom_errorbar(aes(x=unlist(gain[1]), ymin=unlist(gain[2]-gainerror[1]), ymax=unlist(gain[2]+gainerror[1])), width=0.25)
 
 ```
 
