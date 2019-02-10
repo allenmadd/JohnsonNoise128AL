@@ -1,21 +1,13 @@
 ---
-title: "Johnson Noise 128AL"
-author: "Madeleine Allen, Edward Piper"
-date: "1/31/2019"
+title: "analysisStep3"
+author: "Madeleine Allen"
+date: "2/6/2019"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-###Experiment 1: Find g(f)
-
-## Analysis: Step 1: g(f)
-
-Make sure that the data is in the same folder as the R-script.
-
-Plots to verify what the data looks like.
 ```{r}
 vin1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN1.CSV")
 
@@ -130,27 +122,30 @@ k48 <- 48650 #secretly 48.7k but again that would be an ugly variable name
 k48error<- 1
 ```
 
-Import Band Voltage measurements from experiment 2
+###Experiment 3: Johnson Noise - Boltzmann Constant
 ```{r}
-experiment2data<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment2data1.csv")
+experiment3data1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/experiment3data1.csv")
+
 ```
+
+
 
 Calculate Vmeas, V, and Vsystem
 ```{r}
-Vsys<- experiment2data[1,7] #first row 7th column
-VsysError <- experiment2data[1,9]
+Vsys<- experiment3data1[1,7] #first row 7th column
+VsysError <- experiment3data1[1,9]
 
-Vmeask1<- (experiment2data[2,7])
-Vmeask10<-experiment2data[3,7]
-Vmeask20 <-experiment2data[4,7]
-Vmeask32<-experiment2data[5,7]
-Vmeask48<-experiment2data[6,7]
-Vmeask100<-experiment2data[7,7]
+Vmeask1<- (experiment3data1[2,7])
+Vmeask10<-experiment3data1[3,7]
+Vmeask20 <-experiment3data1[4,7]
+Vmeask32<-experiment3data1[5,7]
+Vmeask48<-experiment3data1[6,7]
+Vmeask100<-experiment3data1[7,7]
 
 Vmeas<-c(Vmeask1, Vmeask10, Vmeask20, Vmeask32, Vmeask48, Vmeask100)
 
 #need to redo the error later (2/5)
-VmeasError<-sqrt((sum(experiment2data[2:7,9])^2))
+VmeasError<-sqrt((sum(experiment3data1[2:7,9])^2))
 
 V<- sqrt(-Vsys^2+Vmeas^2)
 Verror<- sqrt(VmeasError^2+ VsysError^2)
@@ -160,6 +155,8 @@ Verror<- sqrt(VmeasError^2+ VsysError^2)
 ##Calculating G
 
 ```{r}
+gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
+
 capacitance <-87.875*(10^-12)
 capacitanceError <-.594*(10^-12)
 #df is just the x componenent
@@ -169,7 +166,7 @@ riemanSum <- function(fa,fb){
   return(area)
 }
 
-resistors<-read.csv("experiment2data1.csv")
+resistors<-read.csv("experiment3data1.csv")
 
 C = capacitance
 integrand <- data.frame(
@@ -214,76 +211,38 @@ So this returns a gain value G for each resistor (called "area")
 resistors<-c(0,1000,10000,20000,32500, 48700,100000)
 plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
 ```
-##Plotting R as a function of V^2, kB, and G
 
-IM VERY CONUFSED. I HAVE 4 GRAPHS HERE BECAUSE IM NOT SURE WHAT GOES ON THE Y AXIS AND WHAT KIND OF FIT LINE WE NEED SO I HAVE ALL 4 COMBOS (Y AND X SWITCHED AND EACH OF A LINEAR OR POLYNOMIAL FIT LINE)
 ```{r}
+#prepare the data for graphing
 kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
 
 area2<-area[2:7] #take away the short's data
-y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
-  #v^2 
-
-#prepare data for graphing
 resistors2 <-resistors[2:7] #take away the short
-y<- unlist(y_value, use.names=FALSE)
-```
+y_value2<- (V^2)/(4*resistors2*area2)
+y2<- unlist(y_value2, use.names=FALSE)
 
 
-```{r}
-#I'll try finding temperatures
 Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
-summary(Temperature) #these are the correct values
-plot(resistors2, Temperature)
-```
+Temperature2<-unlist(Temperature, use.names = FALSE)
 
-```{r}
-#
-#resistor as the x axis and the other term as the y axis.
-#
-resistors3<-resistors2*100
-fit  <- lm(y~resistors3)
-plot(resistors3,y_value, main= "Resistance as a function of Gain and Voltage with a 1D Fit", xlab= "Resistance", ylab = "V^2/ (4*kb*G)")
-lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
-legend("topleft", legend=c("Fit Line"),
-       col=c("red"), lty=1:2, cex=0.8)
+summary(Temperature2)
+
+
+
+#2nd degree fit
+fit <- lm(y2~Temperature2)
+
+#plot same as above this time with a 2d fit line
+plot(Temperature2,y2, main= "Gain and Voltage as a function of Temperature with a 2nd order fit", ylab= "V^2/ (4*R*G)", xlab = "Temperature")
+lines(Temperature2, predict(fit, data.frame(Temperature2)), col="blue")
+legend("topleft", legend=c("Polynomial Fit Line"),
+       col=c("blue"), lty=1:2, cex=0.8)
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
-```
 
-```{r}
-#2nd degree fit
-fit2 <- lm(y~poly(resistors3,2,raw=TRUE))
-
-#plot same as above this time with a 2d fit line
-plot(resistors3,y_value, main= "Gain and Voltage as a function of Resistance with a 2nd order fit", ylab= "V^2/ (4*kb*G)", xlab = "Resistance")
-lines(resistors3, predict(fit2, data.frame(resistors3)), col="blue")
-legend("topleft", legend=c("Polynomial Fit Line"),
-       col=c("blue"), lty=1:2, cex=0.8)
-
-summary(fit2)
-plot(fit2$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
 ```
 
-So I have fit a 1st order polynomial line and a 2nd order polynomial line. Both give reasonable predictions, both have reasonably random residuals. If I didn't know better, I'd pick the 1D line. But Nate told me to look for 2nd order relationships so I will check to see if the data is normally distributed so I can pick based on their p-values.
-```{r}
-shapiro.test(fit$residuals)
-
-shapiro.test(fit2$residuals)
-```
-The 2nd order fit is better. The Shapiro-Wilk normality test tells us the assumptions of normality and homogeniety of variance were met, as there weren’t any obvious abnormalities on the residual plots and the Shapiro-Wik p-value for residuals was p=.147 (fail to reject H0 that data is normal for the 2D line but not for the 1D line).
-
-So because of this we will go with the 2nd order polynomial fit line.
-
-@EDWARD HELLO
-
-I NEED TO GET THE VALUE OF ABSOLUTE 0 OUT OF THIS BUT I GOT THE TEMPERATURES OF EACH RESISTOR AND THEY HONESTLY MAKE SENSE.
-
-I WILL NEED TO FIGURE OUT HOW TO GET ABSOLUTE 0, THEN ILL DO THE ANALYSIS FOR THE NEXT PART.
-
-ON THURSDAY WE CAN TAKE TURNS WORKING ON THE REPORT AND DOING DATA ANALYSIS FOR THE 2ND DATA SET WE TOOK
-
-
+Seems small for kb

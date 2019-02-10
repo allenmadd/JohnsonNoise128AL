@@ -1,7 +1,7 @@
 ---
-title: "Johnson Noise 128AL"
+title: "Experiment 2: Temperatures"
 author: "Madeleine Allen, Edward Piper"
-date: "1/31/2019"
+date: "2/7/2019"
 output: pdf_document
 ---
 
@@ -9,24 +9,13 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-###Experiment 1: Find g(f)
-
-## Analysis: Step 1: g(f)
-
-Make sure that the data is in the same folder as the R-script.
-
-Plots to verify what the data looks like.
-```{r}
+```{r, echo= FALSE}
 vin1<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN1.CSV")
 
 names(vin1)<-c("x", "y")
-plot(vin1$x)
-plot(vin1$y)
-
 ```
 
-Now I'll upload the rest of the data. I'll plot an out graph for reference too.
-```{r}
+```{r, echo=FALSE}
 vin2<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VIN2.CSV")
 names(vin2)<-c("x", "y")
 
@@ -47,11 +36,11 @@ vout4<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT4.CSV")
 names(vout4)<-c("x", "y")
 vout5<-read.csv("/Users/mallen/Documents/128AL/JohnsonNoise128AL/VOUT5.CSV")
 names(vout5)<-c("x", "y")
-plot(vout5$y)
+
 ```
 
-Now to calculate the errors for each measurement (which will be propagated into the final error for the gain):
-```{r}
+
+```{r, echo=FALSE}
 vin1_error<- sd(vin1$y, na.rm=TRUE)/sqrt(length(vin1$y[!is.na(vin1$y)]))
 vin2_error<-sd(vin2$y, na.rm=TRUE)/sqrt(length(vin2$y[!is.na(vin2$y)]))
 vin3_error<- sd(vin3$y, na.rm=TRUE)/sqrt(length(vin3$y[!is.na(vin3$y)]))
@@ -65,25 +54,20 @@ vout4_error<- sd(vout4$y[35:53], na.rm=TRUE)/sqrt(length(vout4$y[!is.na(vout4$y)
 vout5_error<- sd(vout5$y[35:53], na.rm=TRUE)/sqrt(length(vout5$y[!is.na(vout5$y)]))
 ```
 
-Find the mean of each value:
-It should be noted that the vin voltages are flat whereas the vout voltages are peaked, so dont just take average
-```{r}
+```{r, echo=FALSE}
 m_in<- (vin1$y+vin2$y+vin3$y+vin4$y+vin5$y)/5
 #take average of vouts
 m_vout <- data.frame(Frequency = vout1$x, Volts = (vout1$y+vout2$y+vout3$y+vout4$y+vout5$y)/5)
 ```
 
-Now we have the mean in and the mean out so we can find the gain:
-```{r}
+```{r, echo=FALSE}
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
-plot(gain)
+
 #this is consistent with the max gain of 150 calculated in class.
 ```
 
-#Calculating Error
-not really sure how to calculate error of a function. going to take RMSE for each.
-```{r}
+```{r, echo=FALSE}
 rmserrors <- sqrt(data.frame(
   vin1 = sum(((m_in-vin1$y)^2))/399, 
   vin2 = sum(((m_in-vin2$y)^2))/399,
@@ -101,7 +85,6 @@ vinerror <-sqrt(sum(rmserrors[1:5]^2))
 vouterror <- sqrt(sum(rmserrors[6:10]^2))
 gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
 #g(f) error
-plot(1:399,unlist(gainerror[1]))
 ```
 
 #Experiment 2: Johnson Noise 1
@@ -128,6 +111,9 @@ k1error <- .01
 
 k48 <- 48650 #secretly 48.7k but again that would be an ugly variable name
 k48error<- 1
+
+resistors<-c(k1,k10,k20,k35, k48,k100)
+resistorserror<-c(k1error, k10error, k20error, k35error, k48error, k100error)
 ```
 
 Import Band Voltage measurements from experiment 2
@@ -156,7 +142,6 @@ V<- sqrt(-Vsys^2+Vmeas^2)
 Verror<- sqrt(VmeasError^2+ VsysError^2)
 ```
 
-
 ##Calculating G
 
 ```{r}
@@ -169,7 +154,7 @@ riemanSum <- function(fa,fb){
   return(area)
 }
 
-resistors<-read.csv("experiment2data1.csv")
+#resistors<-read.csv("experiment2data1.csv")
 
 C = capacitance
 integrand <- data.frame(
@@ -206,84 +191,72 @@ for(i in 1:length(integrand))
     }
 }
 
+area2error=sqrt((capacitance/capacitanceError)^2+(resistors/resistorserror)^2)
 ```
 
 So this returns a gain value G for each resistor (called "area")
 
 ```{r}
-resistors<-c(0,1000,10000,20000,32500, 48700,100000)
-plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
+#resistors<-c(0,1000,10000,20000,32500, 48700,100000)
+#plot(resistors,area, main= "Resistor value vs G", ylab = "Values of G", xlab = "Resistor Values (Ohm)")
 ```
 ##Plotting R as a function of V^2, kB, and G
 
-IM VERY CONUFSED. I HAVE 4 GRAPHS HERE BECAUSE IM NOT SURE WHAT GOES ON THE Y AXIS AND WHAT KIND OF FIT LINE WE NEED SO I HAVE ALL 4 COMBOS (Y AND X SWITCHED AND EACH OF A LINEAR OR POLYNOMIAL FIT LINE)
 ```{r}
 kb<- 1.38064852 *10^-23 #m2 kg s-2 K-1
 
 area2<-area[2:7] #take away the short's data
 y_value<- (V^2)/(4*kb*area2) #area is the vector that contains all G's
-  #v^2 
 
 #prepare data for graphing
-resistors2 <-resistors[2:7] #take away the short
+resistors2 <-resistors[1:7]
 y<- unlist(y_value, use.names=FALSE)
 ```
 
 
 ```{r}
 #I'll try finding temperatures
+
 Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
-summary(Temperature) #these are the correct values
-plot(resistors2, Temperature)
+
+Temperature2<-unlist(Temperature, use.names = FALSE)
+print(Temperature2) #these are the correct values
+mean(Temperature2)
 ```
+```{r}
+#Error Propagation
+
+```
+
 
 ```{r}
 #
 #resistor as the x axis and the other term as the y axis.
 #
-resistors3<-resistors2*100
-fit  <- lm(y~resistors3)
-plot(resistors3,y_value, main= "Resistance as a function of Gain and Voltage with a 1D Fit", xlab= "Resistance", ylab = "V^2/ (4*kb*G)")
-lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
-legend("topleft", legend=c("Fit Line"),
-       col=c("red"), lty=1:2, cex=0.8)
+
+resistors3<-resistors2[1:6]*100
+resistors3error <- resistors3*sqrt((V^2/Verror^2)+((area2/area2error)^2))
+fit  <- lm(y~0+resistors3)
+
+```
+
+```{r}
+rm(gain) 
+rm(gainerror)
+
+gain=data.frame()
+gainerror=data.frame()
+library(ggplot2)
+qplot(unlist(resistors3),unlist(y))+geom_errorbar(aes(x=unlist(resistors3), ymin=unlist(y-resistors3error), ymax=unlist(y+resistors3error)), width=0.25)+
+  geom_smooth(method="lm", se=FALSE, fullrange=TRUE, level=0.95)+labs(title = "Resistance as a function of Gain and Voltage with a 1D Fit", x= "Resistance", y = "V^2/ (4*kb*G)")
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
+#lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
+#legend("topleft", legend=c("Fit Line"), col=c("red"), lty=1:2, cex=0.8)
 ```
 
-```{r}
-#2nd degree fit
-fit2 <- lm(y~poly(resistors3,2,raw=TRUE))
 
-#plot same as above this time with a 2d fit line
-plot(resistors3,y_value, main= "Gain and Voltage as a function of Resistance with a 2nd order fit", ylab= "V^2/ (4*kb*G)", xlab = "Resistance")
-lines(resistors3, predict(fit2, data.frame(resistors3)), col="blue")
-legend("topleft", legend=c("Polynomial Fit Line"),
-       col=c("blue"), lty=1:2, cex=0.8)
-
-summary(fit2)
-plot(fit2$residuals, main = "Residuals of the fit line", ylab= "Residuals")
-
-```
-
-So I have fit a 1st order polynomial line and a 2nd order polynomial line. Both give reasonable predictions, both have reasonably random residuals. If I didn't know better, I'd pick the 1D line. But Nate told me to look for 2nd order relationships so I will check to see if the data is normally distributed so I can pick based on their p-values.
-```{r}
-shapiro.test(fit$residuals)
-
-shapiro.test(fit2$residuals)
-```
-The 2nd order fit is better. The Shapiro-Wilk normality test tells us the assumptions of normality and homogeniety of variance were met, as there weren’t any obvious abnormalities on the residual plots and the Shapiro-Wik p-value for residuals was p=.147 (fail to reject H0 that data is normal for the 2D line but not for the 1D line).
-
-So because of this we will go with the 2nd order polynomial fit line.
-
-@EDWARD HELLO
-
-I NEED TO GET THE VALUE OF ABSOLUTE 0 OUT OF THIS BUT I GOT THE TEMPERATURES OF EACH RESISTOR AND THEY HONESTLY MAKE SENSE.
-
-I WILL NEED TO FIGURE OUT HOW TO GET ABSOLUTE 0, THEN ILL DO THE ANALYSIS FOR THE NEXT PART.
-
-ON THURSDAY WE CAN TAKE TURNS WORKING ON THE REPORT AND DOING DATA ANALYSIS FOR THE 2ND DATA SET WE TOOK
-
+Then, to find the value of absolute 0 in Celsius, we use the recorded room temperature (20.5 C) and the average Temperature (277.75K). Solving for absolute 0, you get -257.25. We expected to find -273.15.
 
