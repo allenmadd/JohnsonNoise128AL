@@ -141,9 +141,13 @@ gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
 capacitance <-87.875*(10^-12)
 capacitanceError <-.594*(10^-12)
 #df is just the x componenent
-
-riemanSum <- function(fa,fb){
-  area <-0.5*(125)*(fb-fa)+fa*125
+#There is a better way to do 
+#riemanSum <- function(fa,fb){
+#  area <-0.5*(125)*(fb-fa)+fa*125
+#  return(area)
+#}
+riemanSum <- function(f){
+  area<-(125/2)*(f[1]+2*sum(f[2:398])+f[399])
   return(area)
 }
 
@@ -169,17 +173,7 @@ area <- data.frame(
   )
 for(i in 1:length(integrand))
 {
-    for(l in 1:398)
-    {
-      if(is.na(integrand[l+1,i]))
-      {
-        break
-      }
-      else
-      {
-        area[i] <- area[i]+ riemanSum(integrand[l,i],integrand[l+1,i])
-      }
-    }
+        area[i] <- riemanSum(unlist(integrand[i]))
 }
 
 ```

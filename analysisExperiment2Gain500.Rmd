@@ -141,8 +141,8 @@ capacitance <-87.875*(10^-12)
 capacitanceError <-.594*(10^-12)
 #df is just the x componenent
 
-riemanSum <- function(fa,fb){
-  area <-0.5*(125)*(fb-fa)+fa*125
+riemanSum <- function(f){
+  area<-(125/2)*(f[1]+2*sum(f[2:398])+f[399])
   return(area)
 }
 
@@ -150,13 +150,13 @@ riemanSum <- function(fa,fb){
 
 C = capacitance
 integrand <- data.frame(
-  gain[2]/(1+(2*pi*C*vin1$x*short)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k1)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k10)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k20)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k35)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k48)^2),
-  gain[2]/(1+(2*pi*C*vin1$x*k100)^2)
+  gain[2]^2/(1+(2*pi*C*vin1$x*short)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k1)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k10)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k20)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k35)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k48)^2),
+  gain[2]^2/(1+(2*pi*C*vin1$x*k100)^2)
   )
 area <- data.frame(
   G1 =0,
@@ -170,17 +170,7 @@ area <- data.frame(
   )
 for(i in 1:length(integrand))
 {
-    for(l in 1:398)
-    {
-      if(is.na(integrand[l+1,i]))
-      {
-        break
-      }
-      else
-      {
-        area[i] <- area[i]+ riemanSum(integrand[l,i],integrand[l+1,i])
-      }
-    }
+        area[i] <- riemanSum(unlist(integrand[i]))
 }
 
 area2error=sqrt((capacitance/capacitanceError)^2+(resistors/resistorserror)^2)
