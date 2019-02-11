@@ -252,6 +252,9 @@ plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
 #lines(resistors3, predict(fit, data.frame(resistors3)), col="red")
 #legend("topleft", legend=c("Fit Line"), col=c("red"), lty=1:2, cex=0.8)
+
+shapiro.test(y)#the data is normally distributed
+
 ```
 
 

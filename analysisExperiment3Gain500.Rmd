@@ -215,6 +215,9 @@ Temperature2[2]<- Temperature2[2]/10
 print(Temperature2)
 Temperature2Error<-Temperature2*sqrt((V^2/Verror^2)+(resistors2/resistorserror)^2)
 ```
+```{r, echo=FALSE}
+Temperature2Error<-Temperature2Error/1000000
+```
 
 ```{r, echo=FALSE}
 
@@ -238,5 +241,10 @@ qplot((Temperature2),(y2))+geom_errorbar(aes(x=(Temperature2), ymin=(y2-Temperat
 
 summary(fit)
 plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
+```
 
+```{r}
+shapiro.test(y2) #not normally distributed
+yprime <- sqrt(y+.5)#transform data
+shapiro.test(yprime)#normallydistributed
 ```
