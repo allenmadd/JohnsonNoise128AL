@@ -150,13 +150,13 @@ riemanSum <- function(f){
 
 C = capacitance
 integrand <- data.frame(
-  gain[2]^2/(1+(2*pi*C*vin1$x*short)^2),
-  gain[2]^2/(1+(2*pi*C*vin1$x*k1)^2),
-  gain[2]^2/(1+(2*pi*C*vin1$x*k10)^2),
-  gain[2]^2/(1+(2*pi*C*vin1$x*k20)^2),
-  gain[2]^2/(1+(2*pi*C*vin1$x*k35)^2),
-  gain[2]^2/(1+(2*pi*C*vin1$x*k48)^2),
-  gain[2]^2/(1+(2*pi*C*vin1$x*k100)^2)
+  gain[2]/(1+(2*pi*C*vin1$x*short)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k1)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k10)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k20)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k35)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k48)^2),
+  gain[2]/(1+(2*pi*C*vin1$x*k100)^2)
   )
 area <- data.frame(
   G1 =0,
@@ -172,7 +172,6 @@ for(i in 1:length(integrand))
 {
         area[i] <- riemanSum(unlist(integrand[i]))
 }
-
 area2error=sqrt((capacitance/capacitanceError)^2+(resistors/resistorserror)^2)
 ```
 
@@ -191,7 +190,7 @@ y<- unlist(y_value, use.names=FALSE)
 ```
 
 ```{r}
-#I'll try finding temperatures
+#finding temperatures
 
 Temperature<- ((V^2)/(4*kb*area2*resistors2))/100
 
