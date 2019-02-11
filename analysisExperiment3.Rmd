@@ -233,14 +233,3 @@ plot(fit$residuals, main = "Residuals of the fit line", ylab= "Residuals")
 
 ```
 
-```{r}
-shapiro.test(y) #not normally distributed
-
-yprime <- sqrt(y +.5)
-
-shapiro.test(yprime) #transformed data is normal! will use t-test on this transformed data.
-
-```
-
-You have to divide by 100 for some reason in all of the results. Our result for the slope is 1.381*10^-23 with an error
-
