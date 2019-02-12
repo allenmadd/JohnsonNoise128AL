@@ -9,11 +9,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Analysis: Step 1: g(f)
-
-Make sure that the data is in the same folder as the R-script (should be automatic if you clone the git repo) (btw I hate myself for saying "clone the git repo")
-
-Plots to verify what the data looks like.
+*Read the data into the file*
+This will also be done in the following analysis steps but is only displayed once because the environment or whatever.
 ```{r}
 vin1<-read.csv("V1.CSV")
 names(vin1)<-c("x", "y")
@@ -50,7 +47,7 @@ Now we have the mean in and the mean out so we can find the gain:
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
 
-#this is consistent with the max gain of 150 calculated in class.
+print(max(gain$Volts))
 ```
 #Calculating Error
 not really sure how to calculate error of a function. going to take RMSE for each.
@@ -71,13 +68,10 @@ rmserrors <- sqrt(data.frame(
 vinerror <-sqrt(sum(rmserrors[1:5]^2))
 vouterror <- sqrt(sum(rmserrors[6:10]^2))
 gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
-#g(f) error
 
 ```
 #Plot g(f)
 ```{r}
 library(ggplot2)
-#qplot(unlist(gain$Frequency[24:80]),unlist(gain$Volts[24:80]))+geom_errorbar(aes(x=unlist(gain$Frequency[24:80]), ymin=unlist(gain$Volts[24:80]-gainerror$Volts[24:80]), ymax=unlist(gain$Volts[24:80]+gainerror$Volts[24:80])), width=0.25)+labs(title = "The Gain Function g(F)", x= "Frequency (Hz)", y = "Gain")
-
 qplot(unlist(gain$Frequency[11:41]),unlist(gain$Volts[11:41]))+geom_errorbar(aes(x=unlist(gain$Frequency[11:41]), ymin=unlist(gain$Volts[11:41]-gainerror$Volts[11:41]), ymax=unlist(gain$Volts[11:41]+gainerror$Volts[11:41])), width=0.25)+labs(title = "The Gain Function g(F)", x= "Frequency (Hz)", y = "Gain")
 ```

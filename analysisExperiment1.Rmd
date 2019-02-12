@@ -1,5 +1,5 @@
 ---
-title: "Determining g(f) for Gain 150"
+title: "Determining g(f) for Gain 200"
 author: "Madeleine Allen, Edward Piper"
 date: "2/3/2019"
 output: pdf_document
@@ -9,18 +9,11 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Analysis: Step 1: g(f)
-
-Make sure that the data is in the same folder as the R-script (should be automatic if you clone the git repo) (btw I hate myself for saying "clone the git repo")
-
-Plots to verify what the data looks like.
+*Read the data into the file*
+This will also be done in the following analysis steps but is only displayed once because the environment or whatever.
 ```{r}
 vin1<-read.csv("VIN1.CSV")
 names(vin1)<-c("x", "y")
-```
-
-Now I'll upload the rest of the data. I'll plot an out graph for reference too.
-```{r}
 vin2<-read.csv("VIN2.CSV")
 names(vin2)<-c("x", "y")
 vin3<-read.csv("VIN3.CSV")
@@ -54,7 +47,8 @@ Now we have the mean in and the mean out so we can find the gain:
 #compute gain using the average vouts and m_in
 gain <- data.frame(Frequency = vout1$x, Gain = (m_vout[2]/m_in))
 
-#this is consistent with the max gain of 150 calculated in class.
+print(max(gain$Volts))
+#this is consistent with the max gain of ~150 calculated in class.
 ```
 #Calculating Error
 ```{r}
@@ -70,16 +64,15 @@ rmserrors <- sqrt(data.frame(
   vout4 = sum((m_vout$Volts-vout4$y)^2)/399,
   vout5 = sum((m_vout$Volts-vout5$y)^2)/399
 ))
+
 #error in gain, adding in quadrature: 
 vinerror <-sqrt(sum(rmserrors[1:5]^2))
 vouterror <- sqrt(sum(rmserrors[6:10]^2))
 gainerror <- gain[2]*sqrt((vinerror/m_in)^2+(vouterror*(m_vout[2])^-1)^2)
-#g(f) error
-
 ```
+
 #Plot g(f)
 ```{r}
 library(ggplot2)
 qplot(unlist(gain$Frequency[24:80]),unlist(gain$Volts[24:80]))+geom_errorbar(aes(x=unlist(gain$Frequency[24:80]), ymin=unlist(gain$Volts[24:80]-gainerror$Volts[24:80]), ymax=unlist(gain$Volts[24:80]+gainerror$Volts[24:80])), width=0.25)+labs(title = "The Gain Function g(F)", x= "Frequency (Hz)", y = "Gain")
-
 ```

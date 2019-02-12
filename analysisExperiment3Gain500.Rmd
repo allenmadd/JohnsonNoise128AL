@@ -190,6 +190,9 @@ resistors2 <-resistors[1:6]
 y_value2<- (V^2)/(4*resistors2*area2)
 y2<- unlist(y_value2, use.names=FALSE)
 
+area2error=area2*sqrt((capacitanceError/capacitance)^2+(resistorserror/resistors)^2+(Verror/V)^2)
+area2error <-unlist(area2error, use.names = FALSE)
+
 #calculate the temperatures
 Temperature<- ((V^2)/(4*kb*area2*resistors2))
 Temperature2<-unlist(Temperature, use.names = FALSE)
@@ -210,7 +213,7 @@ print(Temperature2)
 Temperature2Error<-Temperature2*sqrt((V^2/Verror^2)+(resistors2/resistorserror)^2)
 ```
 ```{r, echo=FALSE}
-Temperature2Error<-Temperature2Error/1000000
+Temperature2Error<-Temperature2Error/2000000
 ```
 
 ```{r, echo=FALSE}
@@ -232,7 +235,7 @@ library(ggplot2)
 qplot((Temperature2),(y2))+
   geom_errorbar(aes(x=(Temperature2), ymin=(y2-Temperature2Error), ymax=(y2+Temperature2Error)), width=0.25)+
   geom_smooth(method="lm", se=FALSE, fullrange=TRUE, level=0.95)+
-  labs(title = "Temperature vs Voltage/GR, Gain 500", x= "Temperature", y = "V^2/ (4*G*R)")
+  labs(title = "Temperature vs Voltage/GR, Gain 500", x= "Temperature (K) ", y = "V^2/ (4*G*R) (m^2kg/s^2)")
 
 
 summary(fit)
